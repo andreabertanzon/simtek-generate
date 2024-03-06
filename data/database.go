@@ -10,54 +10,24 @@ import (
 )
 
 type Database struct {
+	ConnectionString string
 }
 
-func NewDatabase() (*Database, error) {
-	obj := &Database{}
-	db, err := sql.Open("sqlite3", "simtek.db")
+func NewDatabase(connectionString string) (*Database, error) {
+	obj := &Database{ConnectionString: connectionString}
+	db, err := sql.Open("sqlite3", connectionString)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	sqlStmt := `
-	create table if not exists interventions (
-		id integer not null primary key autoincrement,
-		timestamp text,
-		details text
-	);
-	`
-	_, err = db.Exec(sqlStmt)
-	if err != nil {
-		return nil, err
-	}
 	return obj, nil
-}
-
-func (d *Database) AddIntervention(intervention models.Intervention) error {
-	db, err := sql.Open("sqlite3", "simtek.db")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	details, err := json.Marshal(intervention)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec("INSERT INTO interventions (timestamp, details) VALUES (?, ?)", intervention.Timestamp, string(details))
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (d *Database) GetInterventions() ([]models.Intervention, error) {
 	today := time.Now().Format("02-01-2006")
 
-	db, err := sql.Open("sqlite3", "simtek.db")
+	db, err := sql.Open("sqlite3", d.ConnectionString)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +41,10 @@ func (d *Database) GetInterventions() ([]models.Intervention, error) {
 	var interventions []models.Intervention
 	for rows.Next() {
 		var id int
+		var guid string
 		var timestamp string
 		var details string
-		err = rows.Scan(&id, &timestamp, &details)
+		err = rows.Scan(&id, &guid, &timestamp, &details)
 		if err != nil {
 			return nil, err
 		}
@@ -91,15 +62,17 @@ func (d *Database) GetInterventions() ([]models.Intervention, error) {
 }
 
 func (d *Database) GetIntervention(timestamp string) (models.Intervention, error) {
-	db, err := sql.Open("sqlite3", "simtek.db")
+	db, err := sql.Open("sqlite3", d.ConnectionString)
 	if err != nil {
 		return models.Intervention{}, err
 	}
 	defer db.Close()
 
 	var id int
+	var guid string
 	var details string
-	err = db.QueryRow("SELECT * FROM interventions WHERE timestamp = ?", timestamp).Scan(&id, &timestamp, &details)
+	selectSql := "SELECT * FROM interventions WHERE timestamp = ?"
+	err = db.QueryRow(selectSql, timestamp).Scan(&id, &guid, &timestamp, &details)
 	if err != nil {
 		return models.Intervention{}, err
 	}
@@ -114,7 +87,7 @@ func (d *Database) GetIntervention(timestamp string) (models.Intervention, error
 }
 
 func (d *Database) UpdateIntervention(timestamp string, intervention models.Intervention) error {
-	db, err := sql.Open("sqlite3", "simtek.db")
+	db, err := sql.Open("sqlite3", d.ConnectionString)
 	if err != nil {
 		return err
 	}

@@ -44,7 +44,7 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 			return err
 		}
 		// Site and Timestamp
-		style, err := xlsx.NewStyle(&excelize.Style{
+		headerStyle, err := xlsx.NewStyle(&excelize.Style{
 			Fill: excelize.Fill{
 				Type:    "pattern",
 				Color:   []string{"#FFC0CB"}, // Pink color
@@ -56,7 +56,10 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 			return err
 		}
 
-		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), style)
+		err = xlsx.SetCellStyle(intervention.Site,
+			"A"+strconv.Itoa(currentRow),
+			"B"+strconv.Itoa(currentRow),
+			headerStyle)
 		if err != nil {
 			return err
 		}
@@ -74,7 +77,10 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 		// Workers
 		currentRow += 2
 
-		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), style)
+		err = xlsx.SetCellStyle(intervention.Site,
+			"A"+strconv.Itoa(currentRow),
+			"B"+strconv.Itoa(currentRow),
+			headerStyle)
 		if err != nil {
 			return err
 		}
@@ -83,18 +89,16 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 		xlsx.SetCellValue(intervention.Site, "B"+strconv.Itoa(currentRow), "Ore")
 		currentRow++
 
-		for _, worker := range intervention.Workers {
-			for workerName, workerHours := range worker {
-				xlsx.SetCellValue(intervention.Site, "A"+strconv.Itoa(currentRow), workerName)
-				xlsx.SetCellValue(intervention.Site, "B"+strconv.Itoa(currentRow), workerHours)
-				currentRow++
-			}
+		for workerName, workerHours := range models.Flatten(intervention.Workers) {
+			xlsx.SetCellValue(intervention.Site, "A"+strconv.Itoa(currentRow), workerName)
+			xlsx.SetCellValue(intervention.Site, "B"+strconv.Itoa(currentRow), workerHours)
+			currentRow++
 		}
 
 		// Descriptions
 		currentRow += 2
 
-		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), style)
+		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), headerStyle)
 		if err != nil {
 			return err
 		}
@@ -111,11 +115,18 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 		// Materials
 		currentRow += 2
 
-		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), style)
+		err = xlsx.SetCellStyle(intervention.Site,
+			"A"+strconv.Itoa(currentRow),
+			"B"+strconv.Itoa(currentRow),
+			headerStyle)
 		if err != nil {
 			return err
 		}
-		err = xlsx.SetCellStyle(intervention.Site, "C"+strconv.Itoa(currentRow), "C"+strconv.Itoa(currentRow), style)
+
+		err = xlsx.SetCellStyle(intervention.Site,
+			"C"+strconv.Itoa(currentRow),
+			"C"+strconv.Itoa(currentRow),
+			headerStyle)
 		if err != nil {
 			return err
 		}
@@ -137,7 +148,7 @@ func (eg *ExcelGenerator) Generate(interventions []models.Intervention) error {
 		// Notes
 		currentRow += 2
 
-		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), style)
+		err = xlsx.SetCellStyle(intervention.Site, "A"+strconv.Itoa(currentRow), "B"+strconv.Itoa(currentRow), headerStyle)
 		if err != nil {
 			return err
 		}

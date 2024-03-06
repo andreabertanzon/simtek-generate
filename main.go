@@ -7,13 +7,19 @@ import (
 	"github.com/andreabertanzon/simtek-generate/generators"
 )
 
+const connectionString = "../simtek/simtek.db"
+
 func main() {
-	ir := data.NewSqliteInterventionRepository()
+	ir := data.NewSqliteInterventionRepository(connectionString)
 	interventions, err := ir.GetInterventions()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	generator := generators.NewExcelGenerator(nil)
-	generator.Generate(interventions)
+	generator := generators.NewMarkdownGenerator()
+	err = generator.Generate(interventions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// generator.Generate(interventions)
 }

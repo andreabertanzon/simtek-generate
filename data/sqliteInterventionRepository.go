@@ -3,23 +3,15 @@ package data
 import "github.com/andreabertanzon/simtek-generate/models"
 
 type SqliteInterventionRepository struct {
+	ConnectionString string
 }
 
-func NewSqliteInterventionRepository() *SqliteInterventionRepository {
-	return &SqliteInterventionRepository{}
-}
-
-func (ir *SqliteInterventionRepository) AddIntervention(intervention models.Intervention) error {
-	db, err := NewDatabase()
-	if err != nil {
-		return err
-	}
-
-	return db.AddIntervention(intervention)
+func NewSqliteInterventionRepository(connectionString string) *SqliteInterventionRepository {
+	return &SqliteInterventionRepository{ConnectionString: connectionString}
 }
 
 func (ir *SqliteInterventionRepository) GetInterventions() ([]models.Intervention, error) {
-	db, err := NewDatabase()
+	db, err := NewDatabase(ir.ConnectionString)
 	if err != nil {
 		return nil, err
 	}
@@ -28,19 +20,10 @@ func (ir *SqliteInterventionRepository) GetInterventions() ([]models.Interventio
 }
 
 func (ir *SqliteInterventionRepository) GetIntervention(timestamp string) (models.Intervention, error) {
-	db, err := NewDatabase()
+	db, err := NewDatabase(ir.ConnectionString)
 	if err != nil {
 		return models.Intervention{}, err
 	}
 
 	return db.GetIntervention(timestamp)
-}
-
-func (ir *SqliteInterventionRepository) UpdateIntervention(timestamp string, intervention models.Intervention) error {
-	db, err := NewDatabase()
-	if err != nil {
-		return err
-	}
-
-	return db.UpdateIntervention(timestamp, intervention)
 }
