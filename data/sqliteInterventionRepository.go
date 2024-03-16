@@ -19,6 +19,15 @@ func (ir *SqliteInterventionRepository) GetInterventions() ([]models.Interventio
 	return db.GetInterventions()
 }
 
+func (ir *SqliteInterventionRepository) GetInterventionsByDate(date string) ([]models.Intervention, error) {
+	db, err := NewDatabase(ir.ConnectionString)
+	if err != nil {
+		return nil, err
+	}
+
+	return db.GetInterventionsByDate(date)
+}
+
 func (ir *SqliteInterventionRepository) GetIntervention(timestamp string) (models.Intervention, error) {
 	db, err := NewDatabase(ir.ConnectionString)
 	if err != nil {

@@ -61,6 +61,41 @@ func (d *Database) GetInterventions() ([]models.Intervention, error) {
 	return interventions, nil
 }
 
+func (d *Database) GetInterventionsByDate(date string) ([]models.Intervention, error) {
+	db, err := sql.Open("sqlite3", d.ConnectionString)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM interventions WHERE timestamp = ?", date)
+	if err != nil {
+		return nil, err
+	}
+
+	var interventions []models.Intervention
+	for rows.Next() {
+		var id int
+		var guid string
+		var timestamp string
+		var details string
+		err = rows.Scan(&id, &guid, &timestamp, &details)
+		if err != nil {
+			return nil, err
+		}
+		intervention := models.Intervention{}
+		err = json.Unmarshal([]byte(details), &intervention)
+		if err != nil {
+			return nil, err
+		}
+
+		interventions = append(interventions, intervention)
+
+	}
+
+	return interventions, nil
+}
+
 func (d *Database) GetIntervention(timestamp string) (models.Intervention, error) {
 	db, err := sql.Open("sqlite3", d.ConnectionString)
 	if err != nil {
