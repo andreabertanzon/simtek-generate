@@ -1,6 +1,7 @@
 package generators
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -42,8 +43,15 @@ func NewMarkdownGenerator() *MarkdownGenerator {
 // Generate a markdown file
 func (md *MarkdownGenerator) Generate(interventions []models.Intervention) error {
 	// Generating the title
-	// TODO: iterate over interventions and foreach intervention generate a markdown file
-	// TODO: Once the files are generated (maybe in a concurrent way) merge them into a single file
+
+	// get the first intervention juts to get the day
+	day := interventions[0].Timestamp
+
+	// create the day folder that represents the day of the interventions and that holds md files for that day
+	err := os.Mkdir("generated/"+day, 0755)
+	if err != nil {
+		fmt.Print(err)
+	}
 
 	// Populate the workers array
 	for _, intervention := range interventions {
@@ -115,7 +123,7 @@ func (md *MarkdownGenerator) Generate(interventions []models.Intervention) error
 			return err
 		}
 
-		file, err := os.Create("generated/" + intervention.Site + ".md")
+		file, err := os.Create("generated/" + day + "/" + intervention.Site + ".md")
 		if err != nil {
 			return err
 		}
